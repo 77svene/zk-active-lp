@@ -1,0 +1,7 @@
+Just shipped LiquiAgent: ZK-Verified Autonomous Liquidity Provider for ETHGlobal HackMoney 2026 - Uniswap Track | $50K+ Prize Pool!
+
+First autonomous LP that proves active range management via ZK without revealing price paths to prevent front-running.
+
+https://github.com/77svene/zk-active-lp
+
+#hackathon #AI #Web3 #DeFi @lablabai

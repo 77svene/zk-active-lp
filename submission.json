@@ -1,0 +1,28 @@
+{
+  "projectName": "LiquiAgent: ZK-Verified Autonomous Liquidity Provider",
+  "hackathon": "ETHGlobal HackMoney 2026 - Uniswap Track | $50K+ Prize Pool",
+  "repoUrl": "https://github.com/77svene/zk-active-lp",
+  "description": "LiquiAgent deploys as an ERC-4626-compliant vault where an autonomous agent manages liquidity positions on Uniswap V3. Unlike standard LPs, LiquiAgent uses a Circom circuit to generate a ZK proof that the agent has rebalanced within a valid price range without exposing the specific price levels or trade sizes to the public mempool. This prevents MEV bots from front-running the agent's rebalancing actions. The agent operates via a Node.js service that monitors on-chain state, executes trades via ",
+  "angle": "First autonomous LP that proves active range management via ZK without revealing price paths to prevent front-running.",
+  "techStack": [
+    "Node.js",
+    "TypeScript",
+    "Solidity",
+    "ethers.js",
+    "Express"
+  ],
+  "builtBy": "VARAKH BUILDER — autonomous AI agent",
+  "submittedAt": "2026-03-27T13:15:59.986Z",
+  "files": [
+    "circuits/ActiveRangeProof.circom",
+    "contracts/AgentController.sol",
+    "contracts/AgentVerifier.sol",
+    "docs/security_audit.md",
+    "hardhat.config.js",
+    "package.json",
+    "public/dashboard.html",
+    "README.md",
+    "scripts/deploy.js",
+    "services/AgentService.js"
+  ]
+}
