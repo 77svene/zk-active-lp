@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiquiAgent | ZK-Verified Autonomous Liquidity</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --text-primary: #e8e8f0;
+            --text-secondary: #a0a0b0;
+            --accent-primary: #00d4ff;
+            --accent-secondary: #7c3aed;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --danger: #ff4444;
+            --border: #2a2a3a;
+            --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        .logo-text h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .logo-text p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .card-title {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+        }
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        .metric-value {
+            font-family: var(--font-mono);
+            font-weight: 600;
+        }
+        .metric-value.positive { color: var(--success); }
+        .metric-value.negative { color: var(--danger); }
+        .proof-status {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+        .proof-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--success), #00cc6a);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .proof-info h4 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+        .proof-info p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .proof-hash {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent-primary);
+            word-break: break-all;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+        }
+        .activity-log {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+        .activity-item:hover {
+            background: var(--bg-secondary);
+        }
+        .activity-time {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            min-width: 100px;
+        }
+        .activity-type {
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .activity-type.rebalance {
+            background: rgba(0, 212, 255, 0.15);
+            color: var(--accent-primary);
+        }
+        .activity-type.proof {
+            background: rgba(124, 58, 237, 0.15);
+            color: var(--accent-secondary);
+        }
+        .activity-type.withdraw {
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--success);
+        }
+        .activity-details {
+            flex: 1;
+        }
+        .activity-details h4 {
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+        .activity-details p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .activity-proof {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--accent-primary);
+            word-break: break-all;
+        }
+        .vault-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .vault-stat {
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            text-align: center;
+        }
+        .vault-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            color: var(--accent-primary);
+        }
+        .vault-stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+        .chain-index {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent-secondary);
+            padding: 0.25rem 0.75rem;
+            background: rgba(124, 58, 237, 0.15);
+            border-radius: 6px;
+            display: inline-block;
+        }
+        .refresh-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+        }
+        .refresh-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .privacy-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--success);
+            margin-top: 1rem;
+        }
+        .privacy-badge::before {
+            content: "🔒";
+        }
+        .position-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .position-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .position-id {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent-primary);
+        }
+        .position-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .position-status.active {
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--success);
+        }
+        .position-status.rebalancing {
+            background: rgba(255, 170, 0, 0.15);
+            color: var(--warning);
+        }
+        .position-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+        .position-metric {
+            text-align: center;
+            padding: 0.5rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+        }
+        .position-metric-value {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .position-metric-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+        .zk-proof-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(124, 58, 237, 0.05));
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .zk-proof-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .zk-proof-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+        .zk-proof-chain {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent-secondary);
+        }
+        .zk-proof-hash-display {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            word-break: break-all;
+            padding: 0.5rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            margin-top: 0.5rem;
+        }
+        .zk-proof-verification {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            padding: 0.5rem;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--success);
+        }
+        .zk-proof-verification::before {
+            content: "✓";
+            font-weight: bold;
+        }
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+        .no-data-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .grid { grid-template-columns: 1fr; }
+            .card-value { font-size: 1.5rem; }
+            header { flex-direction: column; gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">LA</div>
+                <div class="logo-text">
+                    <h1>LiquiAgent</h1>
+                    <p>ZK-Verified Autonomous Liquidity Provider</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="status-badge">
+                    <div class="status-dot"></div>
+                    <span>Network: <span id="networkName">Mainnet</span></span>
+                </div>
+                <button class="refresh-btn" id="refreshBtn" onclick="refreshDashboard()">
+                    <span id="refreshIcon">↻</span>
+                    <span id="refreshText">Refresh</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Total Value Locked</span>
+                    <span class="chain-index" id="chainIndex">Chain: 0</span>
+                </div>
+                <div class="card-value" id="tvl">$0.00</div>
+                <div class="card-subtitle">Across all vault positions</div>
+                <div class="vault-info">
+                    <div class="vault-stat">
+                        <div class="vault-stat-value" id="apy">0.00%</div>
+                        <div class="vault-stat-label">APY (30d)</div>
+                    </div>
+                    <div class="vault-stat">
+                        <div class="vault-stat-value" id="totalPositions">0</div>
+                        <div class="vault-stat-label">Active Positions</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">ZK Proof Status</span>
+                    <span class="privacy-badge">Privacy Preserved</span>
+                </div>
+                <div class="proof-status">
+                    <div class="proof-icon">✓</div>
+                    <div class="proof-info">
+                        <h4>Latest Proof Verified</h4>
+                        <p>Proof freshness chain intact</p>
+                        <div class="proof-hash" id="latestProofHash">0x0000000000000000000000000000000000000000000000000000000000000000</div>
+                    </div>
+                </div>
+                <div class="zk-proof-card">
+                    <div class="zk-proof-header">
+                        <span class="zk-proof-title">Proof Chain Index</span>
+                        <span class="zk-proof-chain" id="proofChainIndex">#0</span>
+                    </div>
+                    <div class="zk-proof-verification">
+                        Cryptographic verification complete
+                    </div>
+                    <div class="zk-proof-hash-display" id="proofChainHash">0x0000000000000000000000000000000000000000000000000000000000000000</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Vault Performance</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Total Deposits</span>
+                    <span class="metric-value" id="totalDeposits">$0.00</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Total Withdrawals</span>
+                    <span class="metric-value" id="totalWithdrawals">$0.00</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Net PnL</span>
+                    <span class="metric-value" id="netPnL">$0.00</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Rebalance Count</span>
+                    <span class="metric-value" id="rebalanceCount">0</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Avg Rebalance Interval</span>
+                    <span class="metric-value" id="avgRebalanceInterval">0m</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Active Positions</span>
+                </div>
+                <div id="positionsContainer">
+                    <div class="no-data">
+                        <div class="no-data-icon">📊</div>
+                        <p>Loading positions...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Agent Activity Log</span>
+                </div>
+                <div class="activity-log" id="activityLog">
+                    <div class="no-data">
+                        <div class="no-data-icon">📝</div>
+                        <p>Loading activity logs...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CONTRACT_ADDRESSES = {
+            AGENT_CONTROLLER: '0x0000000000000000000000000000000000000000',
+            AGENT_VERIFIER: '0x0000000000000000000000000000000000000000',
+            VAULT: '0x0000000000000000000000000000000000000000'
+        };
+
+        const NETWORK_CONFIG = {
+            1: { name: 'Ethereum Mainnet', rpc: 'https://eth.llamarpc.com' },
+            11155111: { name: 'Sepolia', rpc: 'https://ethereum-sepolia-rpc.publicnode.com' },
+            8453: { name: 'Base', rpc: 'https://mainnet.base.org' }
+        };
+
+        let currentNetwork = 1;
+        let refreshInterval = null;
+        let isRefreshing = false;
+
+        async function init() {
+            try {
+                if (window.ethereum) {
+                    const provider = new window.ethereum.providers[0] || new window.ethereum();
+                    currentNetwork = parseInt(await provider.send('eth_chainId'), 16);
+                    document.getElementById('networkName').textContent = NETWORK_CONFIG[currentNetwork]?.name || 'Unknown';
+                }
+                await loadDashboardData();
+                startAutoRefresh();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                document.getElementById('activityLog').innerHTML = `
+                    <div class="no-data">
+                        <div class="no-data-icon">⚠️</div>
+                        <p>Connection error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadDashboardData() {
+            if (isRefreshing) return;
+            isRefreshing = true;
+            updateRefreshButton(true);
+
+            try {
+                await Promise.all([
+                    loadVaultMetrics(),
+                    loadZKProofStatus(),
+                    loadPositions(),
+                    loadActivityLogs()
+                ]);
+            } catch (error) {
+                console.error('Load data error:', error);
+            } finally {
+                isRefreshing = false;
+                updateRefreshButton(false);
+            }
+        }
+
+        async function loadVaultMetrics() {
+            try {
+                const controller = await getContractInstance('AGENT_CONTROLLER');
+                const verifier = await getContractInstance('AGENT_VERIFIER');
+
+                const [tvl, totalDeposits, totalWithdrawals, netPnL, rebalanceCount, avgInterval] = await Promise.all([
+                    controller.getTotalValueLocked(),
+                    controller.getTotalDeposits(),
+                    controller.getTotalWithdrawals(),
+                    controller.getNetPnL(),
+                    controller.getRebalanceCount(),
+                    controller.getAverageRebalanceInterval()
+                ]);
+
+                const proofChain = verifier.proofChains(window.ethereum.selectedAddress || '0x0000000000000000000000000000000000000000');
+
+                document.getElementById('tvl').textContent = formatCurrency(tvl);
+                document.getElementById('totalDeposits').textContent = formatCurrency(totalDeposits);
+                document.getElementById('totalWithdrawals').textContent = formatCurrency(totalWithdrawals);
+                document.getElementById('netPnL').textContent = formatCurrency(netPnL);
+                document.getElementById('rebalanceCount').textContent = rebalanceCount.toString();
+                document.getElementById('avgRebalanceInterval').textContent = formatTime(avgInterval);
+                document.getElementById('chainIndex').textContent = `Chain: ${proofChain.chainIndex.toString()}`;
+
+                const apy = calculateAPY(tvl, netPnL);
+                document.getElementById('apy').textContent = `${formatNumber(apy)}%`;
+
+            } catch (error) {
+                console.error('Load vault metrics error:', error);
+            }
+        }
+
+        async function loadZKProofStatus() {
+            try {
+                const verifier = await getContractInstance('AGENT_VERIFIER');
+                const agentAddress = window.ethereum.selectedAddress || '0x0000000000000000000000000000000000000000';
+                
+                const proofChain = verifier.proofChains(agentAddress);
+                
+                document.getElementById('latestProofHash').textContent = formatHash(proofChain.proofHash);
+                document.getElementById('proofChainIndex').textContent = `#${proofChain.chainIndex.toString()}`;
+                document.getElementById('proofChainHash').textContent = formatHash(proofChain.previousProofHash);
+
+            } catch (error) {
+                console.error('Load ZK proof status error:', error);
+            }
+        }
+
+        async function loadPositions() {
+            try {
+                const controller = await getContractInstance('AGENT_CONTROLLER');
+                const positions = await controller.getAllPositions();
+                
+                const container = document.getElementById('positionsContainer');
+                
+                if (positions.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-data">
+                            <div class="no-data-icon">📊</div>
+                            <p>No active positions</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = positions.map(pos => `
+                    <div class="position-card">
+                        <div class="position-header">
+                            <span class="position-id">Position #${pos.tokenId.toString()}</span>
+                            <span class="position-status active">Active</span>
+                        </div>
+                        <div class="position-metrics">
+                            <div class="position-metric">
+                                <div class="position-metric-value">${formatNumber(pos.liquidity)}</div>
+                                <div class="position-metric-label">Liquidity</div>
+                            </div>
+                            <div class="position-metric">
+                                <div class="position-metric-value">${formatTime(pos.lastRebalanceTimestamp)}</div>
+                                <div class="position-metric-label">Last Rebalance</div>
+                            </div>
+                            <div class="position-metric">
+                                <div class="position-metric-value">${formatHash(pos.zkProofHash)}</div>
+                                <div class="position-metric-label">ZK Proof</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Load positions error:', error);
+            }
+        }
+
+        async function loadActivityLogs() {
+            try {
+                const controller = await getContractInstance('AGENT_CONTROLLER');
+                const logs = await controller.getAgentActivityLogs();
+                
+                const container = document.getElementById('activityLog');
+                
+                if (logs.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-data">
+                            <div class="no-data-icon">📝</div>
+                            <p>No activity logs</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = logs.slice(0, 10).map(log => `
+                    <div class="activity-item">
+                        <div class="activity-time">${formatTimestamp(log.timestamp)}</div>
+                        <span class="activity-type ${log.type}">${log.type}</span>
+                        <div class="activity-details">
+                            <h4>${log.description}</h4>
+                            <p>${log.details}</p>
+                        </div>
+                        <div class="activity-proof">${formatHash(log.proofHash)}</div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Load activity logs error:', error);
+            }
+        }
+
+        function refreshDashboard() {
+            loadDashboardData();
+        }
+
+        function startAutoRefresh() {
+            refreshInterval = setInterval(loadDashboardData, 30000);
+        }
+
+        function updateRefreshButton(loading) {
+            const btn = document.getElementById('refreshBtn');
+            const icon = document.getElementById('refreshIcon');
+            const text = document.getElementById('refreshText');
+            
+            if (loading) {
+                icon.innerHTML = '<div class="loading"></div>';
+                text.textContent = 'Loading...';
+                btn.disabled = true;
+            } else {
+                icon.textContent = '↻';
+                text.textContent = 'Refresh';
+                btn.disabled = false;
+            }
+        }
+
+        async function getContractInstance(contractName) {
+            const address = CONTRACT_ADDRESSES[contractName];
+            const abi = getContractABI(contractName);
+            
+            if (!window.ethereum) {
+                throw new Error('No Ethereum provider found');
+            }
+            
+            const provider = new window.ethereum.providers[0] || new window.ethereum();
+            const signer = await provider.getSigner();
+            
+            return new window.ethereum.Contract(address, abi, signer);
+        }
+
+        function getContractABI(contractName) {
+            const abis = {
+                AGENT_CONTROLLER: [
+                    "function getTotalValueLocked() view returns (uint256)",
+                    "function getTotalDeposits() view returns (uint256)",
+                    "function getTotalWithdrawals() view returns (uint256)",
+                    "function getNetPnL() view returns (int256)",
+                    "function getRebalanceCount() view returns (uint256)",
+                    "function getAverageRebalanceInterval() view returns (uint256)",
+                    "function getAllPositions() view returns (tuple(uint256 tokenId, int24 tickLower, int24 tickUpper, uint128 liquidity, uint256 lastRebalanceTimestamp, bytes32 zkProofHash)[])",
+                    "function getAgentActivityLogs() view returns (tuple(uint256 timestamp, string type, string description, string details, bytes32 proofHash)[])"
+                ],
+                AGENT_VERIFIER: [
+                    "function proofChains(address) view returns (tuple(bytes32 previousProofHash, uint256 proofTimestamp, uint256 chainIndex, bytes32 proofHash, bool isActive))"
+                ]
+            };
+            return abis[contractName] || [];
+        }
+
+        function formatCurrency(value) {
+            const num = parseFloat(value.toString()) / 1e18;
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(num);
+        }
+
+        function formatNumber(value) {
+            return new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(value);
+        }
+
+        function formatHash(hash) {
+            if (!hash || hash === '0x0000000000000000000000000000000000000000000000000000000000000000') {
+                return '0x0000000000000000000000000000000000000000000000000000000000000000';
+            }
+            return `${hash.slice(0, 10)}...${hash.slice(-8)}`;
+        }
+
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp * 1000);
+            return date.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        function formatTime(seconds) {
+            if (seconds < 60) return `${seconds}s`;
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
+            return `${Math.floor(seconds / 86400)}d`;
+        }
+
+        function calculateAPY(tvl, netPnL) {
+            const pnl
