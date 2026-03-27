@@ -1,0 +1,32 @@
+{
+  "name": "zk-liquiagent-v3",
+  "version": "1.0.0",
+  "description": "ZK-Verified Autonomous Liquidity Provider with Privacy-Preserving Range Management",
+  "type": "module",
+  "scripts": {
+    "build:circuit": "node scripts/build-circuit.js",
+    "test": "npx hardhat test",
+    "compile": "npx hardhat compile",
+    "node": "npx hardhat node",
+    "deploy": "npx hardhat run scripts/deploy.js --network localhost",
+    "verify:proof": "node scripts/verify-proof.js"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.0.0",
+    "circomlib": "^2.0.5",
+    "circomlibjs": "^0.1.7",
+    "hardhat": "^2.22.0",
+    "snarkjs": "^0.7.2",
+    "ethers": "^6.13.0",
+    "zk-circuit-builder": "^1.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "merkletreejs": "^0.3.11",
+    "zk-proof-verifier": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
